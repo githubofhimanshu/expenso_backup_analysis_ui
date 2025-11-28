@@ -13,7 +13,7 @@ jobs:
   lint-and-build:
     name: Lint and Build Frontend
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -32,10 +32,10 @@ jobs:
         run: npm run lint || echo "Linting completed with warnings"
 
       - name: Build Application
-        run: npm run build
+        # We explicitly set VITE_BASE_PATH for your project page
         env:
-          # Use root path for <user>.github.io repos, and "/repo-name/" for project pages
-          VITE_BASE_PATH: ${{ endsWith(github.event.repository.name, '.github.io') && '/' || format('/{0}/', github.event.repository.name) }}
+          VITE_BASE_PATH: /expenso_backup_analysis_ui/
+        run: npm run build
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -49,7 +49,7 @@ jobs:
           echo "### Build Successful! ✅" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Built Files:**" >> $GITHUB_STEP_SUMMARY
-          cd dist
+          cd dist || exit 0
           du -sh . >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Ready for deployment!**" >> $GITHUB_STEP_SUMMARY
@@ -59,16 +59,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     permissions:
       contents: read
       pages: write
       id-token: write
-    
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -79,7 +79,6 @@ jobs:
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
         with:
-          # Automatically enable Pages for this repo if not already configured
           enablement: true
 
       - name: Upload to GitHub Pages
