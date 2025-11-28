@@ -105,13 +105,19 @@ h3 {
 
 .app-header {
   margin-bottom: 2.5rem;
-  text-align: center;
-  position: relative;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .app-header-text {
   max-width: 640px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .app-title {
@@ -130,9 +136,6 @@ h3 {
 }
 
 .pill-button {
-  position: absolute;
-  top: 0;
-  right: 1rem;
   padding: 0.7rem 0.9rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -146,10 +149,6 @@ h3 {
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
-}
-
-.pill-button--with-clear {
-  right: 10rem;
 }
 
 .pill-button--ghost:hover {
@@ -345,15 +344,87 @@ h3 {
     padding: 1.5rem 1rem 2.25rem;
   }
 
+  .card {
+    padding: 1.25rem;
+  }
+
+  .grid {
+    gap: 1.1rem;
+  }
+
+  .tabs {
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .chart-container {
+    height: 240px;
+  }
+
   .app-title {
     font-size: 2.1rem;
   }
 
-  .pill-button {
-    right: 0.75rem;
+  .header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.25rem 0.85rem 2rem;
   }
 
-  .pill-button--with-clear {
-    right: 8.5rem;
+  .app-header {
+    margin-bottom: 2rem;
+  }
+
+  .app-title {
+    font-size: 1.8rem;
+  }
+
+  .card {
+    padding: 1rem;
+    border-radius: 0.9rem;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+
+  .upload-zone {
+    padding: 2.25rem 1.5rem;
+  }
+
+  .tabs {
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .tab-button {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .summary-chip-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .toast {
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: 1rem;
+    justify-content: center;
+  }
+
+  .data-table {
+    font-size: 0.8rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.6rem;
   }
 }
