@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { DataProvider, useData } from './context/DataContext';
 import UploadZone from './components/UploadZone';
 import Dashboard from './components/Dashboard';
 import Passbook from './components/Passbook';
-import { BarChart3, BookOpen, Sun, Moon } from 'lucide-react';
+import { BarChart3, BookOpen, Sun, Moon, RotateCcw } from 'lucide-react';
 
-function App() {
-  const [dataLoaded, setDataLoaded] = useState(false);
+function AppContent() {
+  const { isDataLoaded, clearData } = useData();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState(() => {
     // Get theme from localStorage or default to 'dark'
@@ -27,6 +28,13 @@ function App() {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleClearData = () => {
+    if (window.confirm('Are you sure you want to clear all data? This will remove all transactions, budgets, and reminders from storage.')) {
+      clearData();
+      setActiveTab('dashboard');
+    }
+  };
+
   return (
     <div className="container">
       <header style={{ marginBottom: '3rem', textAlign: 'center', position: 'relative' }}>
@@ -36,7 +44,7 @@ function App() {
           style={{
             position: 'absolute',
             top: '0',
-            right: '1rem',
+            right: isDataLoaded ? '10rem' : '1rem',
             padding: '0.75rem',
             background: 'var(--surface)',
             border: '1px solid var(--border)',
@@ -73,22 +81,54 @@ function App() {
           )}
         </button>
 
+        {/* Clear Data Button (shown when data is loaded) */}
+        {isDataLoaded && (
+          <button
+            onClick={handleClearData}
+            style={{
+              position: 'absolute',
+              top: '0',
+              right: '1rem',
+              padding: '0.75rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid #ef4444',
+              borderRadius: '0.75rem',
+              color: '#ef4444',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              transition: 'all 0.3s',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            }}
+          >
+            <RotateCcw size={18} />
+            Clear Data
+          </button>
+        )}
+
         <h1 style={{ fontSize: '2.5rem', background: 'linear-gradient(to right, #6366f1, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           Expense Analysis
         </h1>
         <p className="text-secondary">Visualize your financial health with comprehensive insights</p>
+        <p className="text-secondary" style={{ fontSize: '0.875rem', marginTop: '0.5rem', fontStyle: 'italic' }}>
+          ✨ 100% Client-Side • Your data never leaves your browser
+        </p>
       </header>
 
-      {!dataLoaded ? (
+      {!isDataLoaded ? (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <UploadZone onUploadSuccess={() => setDataLoaded(true)} />
-
-          {/* Temporary button to skip upload for dev if data exists */}
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <button className="btn" onClick={() => setDataLoaded(true)} style={{ background: 'transparent', border: '1px solid var(--border)' }}>
-              View Dashboard (if data exists)
-            </button>
-          </div>
+          <UploadZone onUploadSuccess={() => {}} />
         </div>
       ) : (
         <>
@@ -150,6 +190,14 @@ function App() {
         </>
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <DataProvider>
+      <AppContent />
+    </DataProvider>
   );
 }
 

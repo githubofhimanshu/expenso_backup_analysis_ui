@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
-import { uploadFile } from '../services/api';
+import { useData } from '../context/DataContext';
 
 const UploadZone = ({ onUploadSuccess }) => {
+    const { loadDataFromZip } = useData();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
@@ -42,11 +43,18 @@ const UploadZone = ({ onUploadSuccess }) => {
         }
 
         setIsUploading(true);
+        setError(null);
+        
         try {
-            await uploadFile(file);
-            onUploadSuccess();
+            const result = await loadDataFromZip(file);
+            
+            if (result.success) {
+                onUploadSuccess();
+            } else {
+                setError(result.error || 'Failed to process file. Please try again.');
+            }
         } catch (err) {
-            setError('Upload failed. Please try again.');
+            setError('Failed to process file. Please ensure it\'s a valid backup ZIP.');
             console.error(err);
         } finally {
             setIsUploading(false);
