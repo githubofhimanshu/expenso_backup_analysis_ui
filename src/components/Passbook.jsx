@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Filter, ArrowUpDown, Calendar, CreditCard, Tag, TrendingUp, TrendingDown, Search } from 'lucide-react';
 
 const Passbook = () => {
     const { transactions: allTransactions, isLoading } = useData();
-    const [filteredTransactions, setFilteredTransactions] = useState([]);
 
     // Filter states
     const [typeFilter, setTypeFilter] = useState('ALL');
@@ -22,11 +21,12 @@ const Passbook = () => {
     const itemsPerPage = 20;
 
     // Get active transactions
-    const transactions = React.useMemo(() => {
-        return allTransactions.filter(t => t.isDeleted === 0);
-    }, [allTransactions]);
+    const transactions = React.useMemo(
+        () => allTransactions.filter(t => t.isDeleted === 0),
+        [allTransactions]
+    );
 
-    const applyFiltersAndSort = React.useCallback(() => {
+    const filteredTransactions = React.useMemo(() => {
         let filtered = [...transactions];
 
         // Type filter
@@ -46,20 +46,21 @@ const Passbook = () => {
 
         // Search filter
         if (searchTerm) {
+            const lowered = searchTerm.toLowerCase();
             filtered = filtered.filter(t =>
-                t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+                t.description?.toLowerCase().includes(lowered) ||
+                t.notes?.toLowerCase().includes(lowered)
             );
         }
 
         // Date range filter
         if (dateRange.start) {
             const startDate = new Date(dateRange.start).getTime();
-            filtered = filtered.filter(t => t.transactionDate >= startDate);
+            filtered = filtered.filter(t => (t.transactionDate || 0) >= startDate);
         }
         if (dateRange.end) {
             const endDate = new Date(dateRange.end).getTime() + 86400000; // Add 1 day
-            filtered = filtered.filter(t => t.transactionDate < endDate);
+            filtered = filtered.filter(t => (t.transactionDate || 0) < endDate);
         }
 
         // Sorting
@@ -83,13 +84,8 @@ const Passbook = () => {
             return sortOrder === 'asc' ? compareValue : -compareValue;
         });
 
-        setFilteredTransactions(filtered);
-        setCurrentPage(1);
+        return filtered;
     }, [transactions, typeFilter, categoryFilter, paymentMethodFilter, searchTerm, dateRange, sortBy, sortOrder]);
-
-    useEffect(() => {
-        applyFiltersAndSort();
-    }, [applyFiltersAndSort]);
 
     const uniqueCategories = React.useMemo(() => {
         return [...new Set(transactions.map(t => t.categoryId).filter(Boolean))].sort();
@@ -156,7 +152,10 @@ const Passbook = () => {
                         <input
                             type="text"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             placeholder="Description or notes..."
                             style={{
                                 width: '100%',
@@ -178,7 +177,10 @@ const Passbook = () => {
                         </label>
                         <select
                             value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
+                            onChange={(e) => {
+                                setTypeFilter(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.5rem',
@@ -203,7 +205,10 @@ const Passbook = () => {
                         </label>
                         <select
                             value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            onChange={(e) => {
+                                setCategoryFilter(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.5rem',
@@ -229,7 +234,10 @@ const Passbook = () => {
                         </label>
                         <select
                             value={paymentMethodFilter}
-                            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                            onChange={(e) => {
+                                setPaymentMethodFilter(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.5rem',
@@ -256,7 +264,10 @@ const Passbook = () => {
                         <input
                             type="date"
                             value={dateRange.start}
-                            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                            onChange={(e) => {
+                                setDateRange({ ...dateRange, start: e.target.value });
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.5rem',
@@ -277,7 +288,10 @@ const Passbook = () => {
                         <input
                             type="date"
                             value={dateRange.end}
-                            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                            onChange={(e) => {
+                                setDateRange({ ...dateRange, end: e.target.value });
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.5rem',
@@ -298,7 +312,10 @@ const Passbook = () => {
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Sort by:</span>
                         <select
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            onChange={(e) => {
+                                setSortBy(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 padding: '0.5rem',
                                 background: 'var(--surface)',
@@ -314,7 +331,10 @@ const Passbook = () => {
                         </select>
                         <select
                             value={sortOrder}
-                            onChange={(e) => setSortOrder(e.target.value)}
+                            onChange={(e) => {
+                                setSortOrder(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             style={{
                                 padding: '0.5rem',
                                 background: 'var(--surface)',
