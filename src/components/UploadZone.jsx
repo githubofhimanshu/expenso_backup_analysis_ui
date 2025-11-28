@@ -1,12 +1,13 @@
-import React, { useCallback, useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useCallback, useRef, useState } from 'react';
+import { Upload, AlertCircle } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
-const UploadZone = ({ onUploadSuccess }) => {
+const UploadZone = ({ onUploadSuccess = () => {}, onUploadError = () => {} }) => {
     const { loadDataFromZip } = useData();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
+    const fileInputRef = useRef(null);
 
     const handleDrag = useCallback((e) => {
         e.preventDefault();
@@ -38,7 +39,9 @@ const UploadZone = ({ onUploadSuccess }) => {
 
     const processFile = async (file) => {
         if (!file.name.endsWith('.zip')) {
-            setError('Please upload a ZIP file.');
+            const message = 'Please upload a ZIP file.';
+            setError(message);
+            onUploadError(message);
             return;
         }
 
@@ -51,10 +54,14 @@ const UploadZone = ({ onUploadSuccess }) => {
             if (result.success) {
                 onUploadSuccess();
             } else {
-                setError(result.error || 'Failed to process file. Please try again.');
+                const message = result.error || 'Failed to process file. Please try again.';
+                setError(message);
+                onUploadError(message);
             }
         } catch (err) {
-            setError('Failed to process file. Please ensure it\'s a valid backup ZIP.');
+            const message = 'Failed to process file. Please ensure it\'s a valid backup ZIP.';
+            setError(message);
+            onUploadError(message);
             console.error(err);
         } finally {
             setIsUploading(false);
@@ -69,12 +76,13 @@ const UploadZone = ({ onUploadSuccess }) => {
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                onClick={() => document.getElementById('fileInput').click()}
+                onClick={() => fileInputRef.current?.click()}
             >
                 <input
                     type="file"
                     id="fileInput"
                     style={{ display: 'none' }}
+                    ref={fileInputRef}
                     onChange={handleFileInput}
                     accept=".zip"
                 />
@@ -91,7 +99,7 @@ const UploadZone = ({ onUploadSuccess }) => {
             </div>
 
             {error && (
-                <div style={{ marginTop: '1rem', color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="inline-error">
                     <AlertCircle size={20} />
                     <span>{error}</span>
                 </div>

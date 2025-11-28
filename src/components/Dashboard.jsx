@@ -11,15 +11,19 @@ const Dashboard = () => {
     if (isLoading) return <div className="loading-spinner"></div>;
     if (!isDataLoaded || !analytics) return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text)' }}>No data available. Please upload your expense data.</div>;
 
-    const categoryData = Object.entries(analytics.categoryBreakdown || {}).map(([name, value]) => ({
-        name,
-        value: Math.round(value)
-    })).sort((a, b) => b.value - a.value);
+    const categoryData = Object.entries(analytics.categoryBreakdown || {})
+        .map(([name, value]) => ({
+            name,
+            value: Math.round(value)
+        }))
+        .sort((a, b) => b.value - a.value);
 
-    const paymentData = Object.entries(analytics.paymentMethodBreakdown || {}).map(([name, value]) => ({
-        name,
-        value: Math.round(value)
-    })).sort((a, b) => b.value - a.value);
+    const paymentData = Object.entries(analytics.paymentMethodBreakdown || {})
+        .map(([name, value]) => ({
+            name,
+            value: Math.round(value)
+        }))
+        .sort((a, b) => b.value - a.value);
 
     const monthlyData = Object.entries(analytics.monthlyTrends || {}).map(([month, data]) => ({
         month,
@@ -28,7 +32,9 @@ const Dashboard = () => {
         savings: Math.round((data.INCOME || 0) - (data.EXPENSE || 0))
     }));
 
-    const weeklyData = (analytics.weeklyTrends || []).reverse();
+    // Clone before reversing to avoid mutating analytics.weeklyTrends,
+    // which can otherwise cause order flipping on each render.
+    const weeklyData = [...(analytics.weeklyTrends || [])].reverse();
     const budgetData = analytics.budgetTracking || [];
     const recurringExpenses = analytics.recurringExpenses || [];
     const dailyAvg = analytics.dailyAverageSpending || {};
@@ -288,21 +294,21 @@ const Dashboard = () => {
                         <h3 style={{ margin: 0 }}>Recurring Expenses Detected</h3>
                     </div>
                     <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <table className="data-table">
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>Description</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>Category</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'center' }}>Frequency</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Avg Amount</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Total</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th style={{ textAlign: 'center' }}>Frequency</th>
+                                    <th style={{ textAlign: 'right' }}>Avg Amount</th>
+                                    <th style={{ textAlign: 'right' }}>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recurringExpenses.map((expense, idx) => (
-                                    <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                        <td style={{ padding: '0.75rem' }}>{expense.description}</td>
-                                        <td style={{ padding: '0.75rem' }}>
+                                    <tr key={idx} className="data-row">
+                                        <td>{expense.description}</td>
+                                        <td>
                                             <span style={{
                                                 padding: '0.25rem 0.75rem',
                                                 background: 'rgba(99, 102, 241, 0.1)',
@@ -312,7 +318,7 @@ const Dashboard = () => {
                                                 {expense.category}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                        <td style={{ textAlign: 'center' }}>
                                             <span style={{
                                                 padding: '0.25rem 0.5rem',
                                                 background: 'rgba(139, 92, 246, 0.1)',
@@ -324,8 +330,8 @@ const Dashboard = () => {
                                                 {expense.frequency}x
                                             </span>
                                         </td>
-                                        <td style={{ padding: '0.75rem', textAlign: 'right' }}>{formatCurrency(expense.averageAmount)}</td>
-                                        <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600' }}>{formatCurrency(expense.totalAmount)}</td>
+                                        <td style={{ textAlign: 'right' }}>{formatCurrency(expense.averageAmount)}</td>
+                                        <td style={{ textAlign: 'right', fontWeight: '600' }}>{formatCurrency(expense.totalAmount)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -335,24 +341,24 @@ const Dashboard = () => {
             )}
 
             {/* Top Expenses */}
-            <div className="card">
+                <div className="card">
                 <h3>Top 10 Expenses</h3>
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table className="data-table">
                         <thead>
-                            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Description</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Category</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Payment Method</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'right' }}>Amount</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'right' }}>Date</th>
+                            <tr>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Payment Method</th>
+                                <th style={{ textAlign: 'right' }}>Amount</th>
+                                <th style={{ textAlign: 'right' }}>Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             {(analytics.topExpenses || []).map((expense, idx) => (
-                                <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <td style={{ padding: '0.75rem' }}>{expense.description || 'N/A'}</td>
-                                    <td style={{ padding: '0.75rem' }}>
+                                <tr key={idx} className="data-row">
+                                    <td>{expense.description || 'N/A'}</td>
+                                    <td>
                                         <span style={{
                                             padding: '0.25rem 0.75rem',
                                             background: 'rgba(99, 102, 241, 0.1)',
@@ -362,13 +368,13 @@ const Dashboard = () => {
                                             {expense.category || 'Uncategorized'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '0.75rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                    <td style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                                         {expense.paymentMethod || 'N/A'}
                                     </td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600' }}>
+                                    <td style={{ textAlign: 'right', fontWeight: '600' }}>
                                         {formatCurrency(expense.amount)}
                                     </td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                    <td style={{ textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                                         {new Date(expense.date).toLocaleDateString('en-IN')}
                                     </td>
                                 </tr>

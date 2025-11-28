@@ -6,12 +6,13 @@ import Passbook from './components/Passbook';
 import { BarChart3, BookOpen, Sun, Moon, RotateCcw } from 'lucide-react';
 
 function AppContent() {
-  const { isDataLoaded, clearData } = useData();
+  const { isDataLoaded, clearData, analytics } = useData();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState(() => {
     // Get theme from localStorage or default to 'dark'
     return localStorage.getItem('theme') || 'dark';
   });
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     // Apply theme to document
@@ -24,6 +25,12 @@ function AppContent() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
@@ -35,38 +42,30 @@ function AppContent() {
     }
   };
 
+  const handleUploadSuccess = () => {
+    setToast({
+      type: 'success',
+      message: 'Expense data loaded successfully.',
+    });
+  };
+
+  const handleUploadError = (message) => {
+    setToast({
+      type: 'error',
+      message,
+    });
+  };
+
+  const transactionsCount = analytics?.transactionCount || 0;
+  const monthsCount = analytics ? Object.keys(analytics.monthlyTrends || {}).length : 0;
+
   return (
     <div className="container">
-      <header style={{ marginBottom: '3rem', textAlign: 'center', position: 'relative' }}>
+      <header className="app-header">
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
-          style={{
-            position: 'absolute',
-            top: '0',
-            right: isDataLoaded ? '10rem' : '1rem',
-            padding: '0.75rem',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '0.75rem',
-            color: 'var(--text)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-            transition: 'all 0.3s',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-          }}
+          className={`pill-button pill-button--ghost ${isDataLoaded ? 'pill-button--with-clear' : ''}`}
         >
           {theme === 'dark' ? (
             <>
@@ -85,99 +84,57 @@ function AppContent() {
         {isDataLoaded && (
           <button
             onClick={handleClearData}
-            style={{
-              position: 'absolute',
-              top: '0',
-              right: '1rem',
-              padding: '0.75rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid #ef4444',
-              borderRadius: '0.75rem',
-              color: '#ef4444',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              transition: 'all 0.3s',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            }}
+            className="pill-button pill-button--danger"
           >
             <RotateCcw size={18} />
             Clear Data
           </button>
         )}
 
-        <h1 style={{ fontSize: '2.5rem', background: 'linear-gradient(to right, #6366f1, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Expense Analysis
-        </h1>
-        <p className="text-secondary">Visualize your financial health with comprehensive insights</p>
-        <p className="text-secondary" style={{ fontSize: '0.875rem', marginTop: '0.5rem', fontStyle: 'italic' }}>
-          ✨ 100% Client-Side • Your data never leaves your browser
-        </p>
+        <div className="app-header-text">
+          <h1 className="app-title">
+            Expense Analysis
+          </h1>
+          <p className="text-secondary">Visualize your financial health with comprehensive insights</p>
+          <p className="text-secondary app-subtitle">
+            ✨ 100% Client-Side • Your data never leaves your browser
+          </p>
+          {isDataLoaded && (
+            <div className="summary-chip-row">
+              <div className="summary-chip">
+                {transactionsCount.toLocaleString('en-IN')} transactions
+              </div>
+              {monthsCount > 0 && (
+                <div className="summary-chip">
+                  {monthsCount} month{monthsCount === 1 ? '' : 's'} of history
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       {!isDataLoaded ? (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <UploadZone onUploadSuccess={() => {}} />
+          <UploadZone
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+          />
         </div>
       ) : (
         <>
           {/* Tab Navigation */}
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            marginBottom: '2rem',
-            borderBottom: '2px solid var(--border)',
-            padding: '0 1rem'
-          }}>
+          <div className="tabs">
             <button
               onClick={() => setActiveTab('dashboard')}
-              style={{
-                padding: '1rem 1.5rem',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: activeTab === 'dashboard' ? '2px solid var(--primary)' : '2px solid transparent',
-                color: activeTab === 'dashboard' ? 'var(--primary)' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '-2px',
-                transition: 'all 0.3s'
-              }}
+              className={`tab-button ${activeTab === 'dashboard' ? 'tab-button--active' : ''}`}
             >
               <BarChart3 size={20} />
               Dashboard
             </button>
             <button
               onClick={() => setActiveTab('passbook')}
-              style={{
-                padding: '1rem 1.5rem',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: activeTab === 'passbook' ? '2px solid var(--primary)' : '2px solid transparent',
-                color: activeTab === 'passbook' ? 'var(--primary)' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '-2px',
-                transition: 'all 0.3s'
-              }}
+              className={`tab-button ${activeTab === 'passbook' ? 'tab-button--active' : ''}`}
             >
               <BookOpen size={20} />
               Passbook
@@ -188,6 +145,16 @@ function AppContent() {
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'passbook' && <Passbook />}
         </>
+      )}
+
+      {toast && (
+        <div
+          className={`toast toast--${toast.type}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span>{toast.message}</span>
+        </div>
       )}
     </div>
   );

@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { processZipFile, synchronizeBudgetWithTransactions } from '../services/dataParser';
 import { getComprehensiveAnalytics } from '../services/analyticsService';
 
+const isDev = import.meta.env?.DEV ?? false;
+
 // Create context
 const DataContext = createContext(null);
 
@@ -28,7 +30,9 @@ export const DataProvider = ({ children }) => {
           let parsedBudgets = JSON.parse(storedBudgets);
           const parsedReminders = storedReminders ? JSON.parse(storedReminders) : [];
 
-          console.log('Loaded from localStorage - Re-synchronizing budgets...');
+          if (isDev) {
+            console.log('Loaded from localStorage - Re-synchronizing budgets...');
+          }
           
           // Re-synchronize budgets with transactions (in case of data inconsistency)
           parsedBudgets = synchronizeBudgetWithTransactions(parsedBudgets, parsedTransactions);
@@ -42,10 +46,14 @@ export const DataProvider = ({ children }) => {
           setAnalytics(analyticsData);
           
           setIsDataLoaded(true);
-          console.log('Data loaded from localStorage');
+          if (isDev) {
+            console.log('Data loaded from localStorage');
+          }
         }
       } catch (err) {
-        console.error('Error loading data from localStorage:', err);
+        if (isDev) {
+          console.error('Error loading data from localStorage:', err);
+        }
         // Clear corrupted data
         localStorage.removeItem('expenseTransactions');
         localStorage.removeItem('expenseBudgets');
@@ -63,9 +71,13 @@ export const DataProvider = ({ children }) => {
         localStorage.setItem('expenseTransactions', JSON.stringify(transactions));
         localStorage.setItem('expenseBudgets', JSON.stringify(budgets));
         localStorage.setItem('expensePaymentReminders', JSON.stringify(paymentReminders));
-        console.log('Data saved to localStorage');
+        if (isDev) {
+          console.log('Data saved to localStorage');
+        }
       } catch (err) {
-        console.error('Error saving data to localStorage:', err);
+        if (isDev) {
+          console.error('Error saving data to localStorage:', err);
+        }
       }
     }
   }, [transactions, budgets, paymentReminders, isDataLoaded]);
@@ -78,7 +90,9 @@ export const DataProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('Processing ZIP file:', file.name);
+      if (isDev) {
+        console.log('Processing ZIP file:', file.name);
+      }
       const data = await processZipFile(file);
 
       setTransactions(data.transactions);
@@ -90,24 +104,24 @@ export const DataProvider = ({ children }) => {
       setAnalytics(analyticsData);
 
       setIsDataLoaded(true);
-      console.log('Data loaded successfully');
-      console.log('Transactions:', data.transactions.length);
-      console.log('Budgets:', data.budgets.length);
-      console.log('Payment Reminders:', data.paymentReminders.length);
-      
-      // Log budgets being set to state
-      console.log('\n=== Budgets in DataContext State ===');
-      data.budgets.forEach(b => {
-        console.log(`${b.name}: Budget=${b.budgetAmount}, Spent=${b.spentAmount}, Status=${b.status}`);
-      });
-      
-      // Log budget tracking from analytics
-      console.log('\n=== Budget Tracking in Analytics ===');
-      console.log(analyticsData.budgetTracking);
+      if (isDev) {
+        console.log('Data loaded successfully');
+        console.log('Transactions:', data.transactions.length);
+        console.log('Budgets:', data.budgets.length);
+        console.log('Payment Reminders:', data.paymentReminders.length);
+        console.log('\n=== Budgets in DataContext State ===');
+        data.budgets.forEach(b => {
+          console.log(`${b.name}: Budget=${b.budgetAmount}, Spent=${b.spentAmount}, Status=${b.status}`);
+        });
+        console.log('\n=== Budget Tracking in Analytics ===');
+        console.log(analyticsData.budgetTracking);
+      }
 
       return { success: true };
     } catch (err) {
-      console.error('Error loading data from ZIP:', err);
+      if (isDev) {
+        console.error('Error loading data from ZIP:', err);
+      }
       setError(err.message || 'Failed to load data');
       return { success: false, error: err.message };
     } finally {
@@ -122,7 +136,9 @@ export const DataProvider = ({ children }) => {
     if (transactions.length > 0) {
       const analyticsData = getComprehensiveAnalytics(transactions, budgets);
       setAnalytics(analyticsData);
-      console.log('Analytics refreshed');
+      if (isDev) {
+        console.log('Analytics refreshed');
+      }
     }
   }, [transactions, budgets]);
 
@@ -142,7 +158,9 @@ export const DataProvider = ({ children }) => {
     localStorage.removeItem('expenseBudgets');
     localStorage.removeItem('expensePaymentReminders');
     
-    console.log('Data cleared');
+    if (isDev) {
+      console.log('Data cleared');
+    }
   }, []);
 
   /**

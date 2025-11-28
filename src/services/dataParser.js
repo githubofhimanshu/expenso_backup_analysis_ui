@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 
+const isDev = import.meta.env?.DEV ?? false;
+
 /**
  * Parses a CSV string into an array of objects
  * @param {string} csvText - CSV content as string
@@ -165,38 +167,43 @@ const extractCurrencyCode = (amountStr) => {
 const synchronizeBudgetWithTransactions = (budgets, transactions) => {
   const activeTransactions = transactions.filter(t => t.isDeleted === 0);
   
-  console.log('=== Budget Synchronization Debug ===');
-  console.log('Total budgets:', budgets.length);
-  console.log('Total active transactions:', activeTransactions.length);
+  if (isDev) {
+    console.log('=== Budget Synchronization Debug ===');
+    console.log('Total budgets:', budgets.length);
+    console.log('Total active transactions:', activeTransactions.length);
+  }
 
   return budgets.map(budget => {
     const budgetCategoryId = budget.categoryId;
     const budgetCategoryName = budget.categoryName;
 
     if (!budgetCategoryId || budgetCategoryId.trim() === '') {
-      console.log('Skipping budget with no categoryId:', budget.name);
+      if (isDev) {
+        console.log('Skipping budget with no categoryId:', budget.name);
+      }
       return budget;
     }
-
-    console.log('\n=== Processing budget:', budget.name, '===');
-    console.log('  Budget Category ID:', `"${budgetCategoryId}"`);
-    console.log('  Budget Category Name:', `"${budgetCategoryName}"`);
-    console.log('  Budget Amount:', budget.budgetAmount);
 
     // Calculate actual spent from transactions matching this budget's category ID
     // Normalize category ID: trim, lowercase, and replace underscores with spaces
     const normalizedBudgetCategoryId = budgetCategoryId.trim().toLowerCase().replace(/_/g, ' ');
-    console.log('  → Normalized budget category for matching:', `"${normalizedBudgetCategoryId}"`);
-    
-    // First, let's see all unique transaction categories for debugging
-    const uniqueTransactionCategories = [...new Set(
-      activeTransactions
-        .filter(t => t.type === 'EXPENSE' && t.categoryId)
-        .map(t => t.categoryId.trim())
-    )];
-    console.log('  → All expense categories in transactions (original):', uniqueTransactionCategories);
-    console.log('  → All expense categories (normalized):', 
-      uniqueTransactionCategories.map(c => c.toLowerCase().replace(/_/g, ' ')));
+    if (isDev) {
+      console.log('\n=== Processing budget:', budget.name, '===');
+      console.log('  Budget Category ID:', `"${budgetCategoryId}"`);
+      console.log('  Budget Category Name:', `"${budgetCategoryName}"`);
+      console.log('  Budget Amount:', budget.budgetAmount);
+      console.log('  → Normalized budget category for matching:', `"${normalizedBudgetCategoryId}"`);
+      
+      // First, let's see all unique transaction categories for debugging
+      const uniqueTransactionCategories = [...new Set(
+        activeTransactions
+          .filter(t => t.type === 'EXPENSE' && t.categoryId)
+          .map(t => t.categoryId.trim())
+      )];
+      console.log('  → All expense categories in transactions (original):', uniqueTransactionCategories);
+      console.log('  → All expense categories (normalized):', 
+        uniqueTransactionCategories.map(c => c.toLowerCase().replace(/_/g, ' ')));
+    }
     
     const matchedTransactions = [];
     const actualSpent = activeTransactions
@@ -211,15 +218,18 @@ const synchronizeBudgetWithTransactions = (budgets, transactions) => {
         
         if (matches) {
           matchedTransactions.push(t);
-          console.log('    ✓ Matched:', t.description, '→ ₹', t.amount);
+          if (isDev) {
+            console.log('    ✓ Matched:', t.description, '→ ₹', t.amount);
+          }
         }
         return matches;
       })
       .reduce((sum, t) => sum + (t.amount || 0), 0);
     
-    console.log('  → Total transactions matched:', matchedTransactions.length);
-
-    console.log('  → Total spent calculated:', actualSpent);
+    if (isDev) {
+      console.log('  → Total transactions matched:', matchedTransactions.length);
+      console.log('  → Total spent calculated:', actualSpent);
+    }
 
     // Update budget with actual spent amount
     const currencyCode = extractCurrencyCode(budget.budgetAmount);
@@ -236,10 +246,12 @@ const synchronizeBudgetWithTransactions = (budgets, transactions) => {
       status = 'ON_TRACK';
     }
 
-    console.log('  → Parsed budget amount:', budgetAmount);
-    console.log('  → Updated spent amount:', updatedSpentAmount);
-    console.log('  → Percentage used:', ((actualSpent / budgetAmount) * 100).toFixed(2) + '%');
-    console.log('  → Status:', status);
+    if (isDev) {
+      console.log('  → Parsed budget amount:', budgetAmount);
+      console.log('  → Updated spent amount:', updatedSpentAmount);
+      console.log('  → Percentage used:', ((actualSpent / budgetAmount) * 100).toFixed(2) + '%');
+      console.log('  → Status:', status);
+    }
 
     return {
       ...budget,
@@ -280,30 +292,44 @@ export const processZipFile = async (file) => {
         const csvText = await zipEntry.async('text');
         
         if (filename.includes('transactions.csv')) {
-          console.log('Parsing transactions.csv');
+          if (isDev) {
+            console.log('Parsing transactions.csv');
+          }
           transactions = parseCSV(csvText, mapTransaction);
-          console.log('Parsed transactions:', transactions.length);
+          if (isDev) {
+            console.log('Parsed transactions:', transactions.length);
+          }
         } else if (filename.includes('budgets.csv') && !filename.includes('budget_history')) {
-          console.log('Parsing budgets.csv');
+          if (isDev) {
+            console.log('Parsing budgets.csv');
+          }
           budgets = parseCSV(csvText, mapBudget);
-          console.log('Parsed budgets:', budgets.length);
+          if (isDev) {
+            console.log('Parsed budgets:', budgets.length);
+          }
         } else if (filename.includes('payment_reminders.csv')) {
-          console.log('Parsing payment_reminders.csv');
+          if (isDev) {
+            console.log('Parsing payment_reminders.csv');
+          }
           paymentReminders = parseCSV(csvText, mapPaymentReminder);
-          console.log('Parsed payment reminders:', paymentReminders.length);
+          if (isDev) {
+            console.log('Parsed payment reminders:', paymentReminders.length);
+          }
         }
       }
     }
 
     // Synchronize budget spent amounts with actual transactions
     budgets = synchronizeBudgetWithTransactions(budgets, transactions);
-    console.log('=== Budget Synchronization Complete ===');
-    
-    // Log final synchronized budgets
-    console.log('\n=== Final Synchronized Budgets ===');
-    budgets.forEach(b => {
-      console.log(`${b.name}: Budget=${b.budgetAmount}, Spent=${b.spentAmount}, Status=${b.status}`);
-    });
+    if (isDev) {
+      console.log('=== Budget Synchronization Complete ===');
+      
+      // Log final synchronized budgets
+      console.log('\n=== Final Synchronized Budgets ===');
+      budgets.forEach(b => {
+        console.log(`${b.name}: Budget=${b.budgetAmount}, Spent=${b.spentAmount}, Status=${b.status}`);
+      });
+    }
 
     return {
       transactions,
@@ -311,7 +337,9 @@ export const processZipFile = async (file) => {
       paymentReminders,
     };
   } catch (error) {
-    console.error('Error processing ZIP file:', error);
+    if (isDev) {
+      console.error('Error processing ZIP file:', error);
+    }
     throw new Error('Failed to process ZIP file: ' + error.message);
   }
 };

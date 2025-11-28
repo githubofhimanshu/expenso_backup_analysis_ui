@@ -332,33 +332,27 @@ const Passbook = () => {
 
                 {/* Transactions Table */}
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                    <table className="data-table">
                         <thead>
-                            <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600' }}>Date & Time</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600' }}>Description</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600' }}>Category</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600' }}>Payment Method</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600' }}>Amount</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: '600' }}>Type</th>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Payment Method</th>
+                                <th style={{ textAlign: 'right' }}>Amount</th>
+                                <th style={{ textAlign: 'center' }}>Type</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedTransactions.map((transaction, idx) => (
-                                <tr key={transaction.id || idx} style={{
-                                    borderBottom: '1px solid var(--border)',
-                                    transition: 'background 0.2s'
-                                }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                                >
-                                    <td style={{ padding: '0.75rem' }}>
+                                <tr key={transaction.id || idx} className="data-row">
+                                    <td>
                                         <div>{formatDate(transaction.transactionDate)}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                                             {formatTime(transaction.transactionDate)}
                                         </div>
                                     </td>
-                                    <td style={{ padding: '0.75rem', maxWidth: '200px' }}>
+                                    <td style={{ maxWidth: '200px' }}>
                                         <div style={{ fontWeight: '500' }}>{transaction.description || 'N/A'}</div>
                                         {transaction.notes && (
                                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
@@ -366,7 +360,7 @@ const Passbook = () => {
                                             </div>
                                         )}
                                     </td>
-                                    <td style={{ padding: '0.75rem' }}>
+                                    <td>
                                         <span style={{
                                             padding: '0.25rem 0.75rem',
                                             background: 'rgba(99, 102, 241, 0.1)',
@@ -377,7 +371,7 @@ const Passbook = () => {
                                             {transaction.categoryId || 'Uncategorized'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>
+                                    <td style={{ color: 'var(--text-secondary)' }}>
                                         {transaction.paymentMethod || 'N/A'}
                                     </td>
                                     <td style={{
