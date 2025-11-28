@@ -19,25 +19,7 @@ const UploadZone = ({ onUploadSuccess = () => {}, onUploadError = () => {} }) =>
         }
     }, []);
 
-    const handleDrop = useCallback(async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-        setError(null);
-
-        const files = e.dataTransfer.files;
-        if (files && files[0]) {
-            await processFile(files[0]);
-        }
-    }, []);
-
-    const handleFileInput = async (e) => {
-        if (e.target.files && e.target.files[0]) {
-            await processFile(e.target.files[0]);
-        }
-    };
-
-    const processFile = async (file) => {
+    const processFile = useCallback(async (file) => {
         if (!file.name.endsWith('.zip')) {
             const message = 'Please upload a ZIP file.';
             setError(message);
@@ -65,6 +47,24 @@ const UploadZone = ({ onUploadSuccess = () => {}, onUploadError = () => {} }) =>
             console.error(err);
         } finally {
             setIsUploading(false);
+        }
+    }, [loadDataFromZip, onUploadError, onUploadSuccess]);
+
+    const handleDrop = useCallback(async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        setError(null);
+
+        const files = e.dataTransfer.files;
+        if (files && files[0]) {
+            await processFile(files[0]);
+        }
+    }, [processFile]);
+
+    const handleFileInput = async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            await processFile(e.target.files[0]);
         }
     };
 
