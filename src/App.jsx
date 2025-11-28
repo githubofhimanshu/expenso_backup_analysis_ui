@@ -62,34 +62,34 @@ function AppContent() {
   return (
     <div className="container">
       <header className="app-header">
-        {/* Theme Toggle Button */}
-        <button
-          onClick={toggleTheme}
-          className={`pill-button pill-button--ghost ${isDataLoaded ? 'pill-button--with-clear' : ''}`}
-        >
-          {theme === 'dark' ? (
-            <>
-              <Sun size={18} />
-              Light
-            </>
-          ) : (
-            <>
-              <Moon size={18} />
-              Dark
-            </>
-          )}
-        </button>
-
-        {/* Clear Data Button (shown when data is loaded) */}
-        {isDataLoaded && (
+        <div className="header-actions">
           <button
-            onClick={handleClearData}
-            className="pill-button pill-button--danger"
+            onClick={toggleTheme}
+            className="pill-button pill-button--ghost"
           >
-            <RotateCcw size={18} />
-            Clear Data
+            {theme === 'dark' ? (
+              <>
+                <Sun size={18} />
+                Light
+              </>
+            ) : (
+              <>
+                <Moon size={18} />
+                Dark
+              </>
+            )}
           </button>
-        )}
+
+          {isDataLoaded && (
+            <button
+              onClick={handleClearData}
+              className="pill-button pill-button--danger"
+            >
+              <RotateCcw size={18} />
+              Clear Data
+            </button>
+          )}
+        </div>
 
         <div className="app-header-text">
           <h1 className="app-title">
