@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTransactions } from '../services/api';
+import { useData } from '../context/DataContext';
 import { Filter, ArrowUpDown, Calendar, CreditCard, Tag, TrendingUp, TrendingDown, Search } from 'lucide-react';
 
 const Passbook = () => {
-    const [transactions, setTransactions] = useState([]);
+    const { transactions: allTransactions, isLoading } = useData();
     const [filteredTransactions, setFilteredTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     // Filter states
     const [typeFilter, setTypeFilter] = useState('ALL');
@@ -22,26 +21,12 @@ const Passbook = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
-    useEffect(() => {
-        loadTransactions();
-    }, []);
+    // Get active transactions
+    const transactions = React.useMemo(() => {
+        return allTransactions.filter(t => t.isDeleted === 0);
+    }, [allTransactions]);
 
-    useEffect(() => {
-        applyFiltersAndSort();
-    }, [transactions, typeFilter, categoryFilter, paymentMethodFilter, searchTerm, dateRange, sortBy, sortOrder]);
-
-    const loadTransactions = async () => {
-        try {
-            const data = await fetchTransactions();
-            setTransactions(data);
-        } catch (err) {
-            console.error('Error loading transactions:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const applyFiltersAndSort = () => {
+    const applyFiltersAndSort = React.useCallback(() => {
         let filtered = [...transactions];
 
         // Type filter
@@ -100,15 +85,19 @@ const Passbook = () => {
 
         setFilteredTransactions(filtered);
         setCurrentPage(1);
-    };
+    }, [transactions, typeFilter, categoryFilter, paymentMethodFilter, searchTerm, dateRange, sortBy, sortOrder]);
 
-    const getUniqueCategories = () => {
+    useEffect(() => {
+        applyFiltersAndSort();
+    }, [applyFiltersAndSort]);
+
+    const uniqueCategories = React.useMemo(() => {
         return [...new Set(transactions.map(t => t.categoryId).filter(Boolean))].sort();
-    };
+    }, [transactions]);
 
-    const getUniquePaymentMethods = () => {
+    const uniquePaymentMethods = React.useMemo(() => {
         return [...new Set(transactions.map(t => t.paymentMethod).filter(Boolean))].sort();
-    };
+    }, [transactions]);
 
     const formatCurrency = (value) => `₹${value?.toLocaleString('en-IN') || 0}`;
     const formatDate = (timestamp) => {
@@ -133,7 +122,7 @@ const Passbook = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
 
-    if (loading) return <div className="loading-spinner"></div>;
+    if (isLoading) return <div className="loading-spinner"></div>;
 
     return (
         <div className="grid">
@@ -226,7 +215,7 @@ const Passbook = () => {
                             }}
                         >
                             <option value="ALL">All Categories</option>
-                            {getUniqueCategories().map(cat => (
+                            {uniqueCategories.map(cat => (
                                 <option key={cat} value={cat}>{cat}</option>
                             ))}
                         </select>
@@ -252,7 +241,7 @@ const Passbook = () => {
                             }}
                         >
                             <option value="ALL">All Methods</option>
-                            {getUniquePaymentMethods().map(method => (
+                            {uniquePaymentMethods.map(method => (
                                 <option key={method} value={method}>{method}</option>
                             ))}
                         </select>

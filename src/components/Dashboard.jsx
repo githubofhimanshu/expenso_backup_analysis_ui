@@ -1,32 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { fetchAnalytics } from '../services/api';
+import React from 'react';
+import { useData } from '../context/DataContext';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, AreaChart, Area } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Activity, CreditCard, Calendar, PieChart as PieIcon, Target, Repeat, Zap } from 'lucide-react';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 const Dashboard = () => {
-    const [analytics, setAnalytics] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { analytics, isLoading, isDataLoaded } = useData();
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            const data = await fetchAnalytics();
-            console.log('Analytics data:', data);
-            setAnalytics(data);
-        } catch (err) {
-            console.error('Error loading analytics:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) return <div className="loading-spinner"></div>;
-    if (!analytics) return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text)' }}>No data available. Please upload your expense data.</div>;
+    if (isLoading) return <div className="loading-spinner"></div>;
+    if (!isDataLoaded || !analytics) return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text)' }}>No data available. Please upload your expense data.</div>;
 
     const categoryData = Object.entries(analytics.categoryBreakdown || {}).map(([name, value]) => ({
         name,
