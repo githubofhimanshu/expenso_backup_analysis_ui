@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { Filter, ArrowUpDown, Calendar, CreditCard, Tag, TrendingUp, TrendingDown, Search } from 'lucide-react';
 
@@ -19,6 +19,9 @@ const Passbook = () => {
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
+
+    // Responsive table layout
+    const [isMobileTable, setIsMobileTable] = useState(false);
 
     // Get active transactions
     const transactions = React.useMemo(
@@ -118,17 +121,30 @@ const Passbook = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
 
+    // Detect small screens for compact 3-column passbook table
+    useEffect(() => {
+        const checkIsMobile = () => {
+            if (typeof window !== 'undefined') {
+                setIsMobileTable(window.innerWidth <= 640);
+            }
+        };
+
+        checkIsMobile();
+        window.addEventListener('resize', checkIsMobile);
+        return () => window.removeEventListener('resize', checkIsMobile);
+    }, []);
+
     if (isLoading) return <div className="loading-spinner"></div>;
 
     return (
         <div className="grid">
             <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <CreditCard size={28} color="var(--primary)" />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.2rem' }}>
+                        <CreditCard size={24} color="var(--primary)" />
                         Passbook
                     </h2>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                         {filteredTransactions.length} transactions
                     </div>
                 </div>
@@ -137,9 +153,9 @@ const Passbook = () => {
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '1rem',
-                    marginBottom: '1.5rem',
-                    padding: '1rem',
+                    gap: '0.85rem',
+                    marginBottom: '1.25rem',
+                    padding: '0.9rem',
                     background: 'rgba(255,255,255,0.03)',
                     borderRadius: '0.75rem'
                 }}>
@@ -159,12 +175,12 @@ const Passbook = () => {
                             placeholder="Description or notes..."
                             style={{
                                 width: '100%',
-                                padding: '0.5rem',
+                                padding: '0.55rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         />
                     </div>
@@ -183,12 +199,12 @@ const Passbook = () => {
                             }}
                             style={{
                                 width: '100%',
-                                padding: '0.5rem',
+                                padding: '0.55rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         >
                             <option value="ALL">All Types</option>
@@ -211,12 +227,12 @@ const Passbook = () => {
                             }}
                             style={{
                                 width: '100%',
-                                padding: '0.5rem',
+                                padding: '0.55rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         >
                             <option value="ALL">All Categories</option>
@@ -240,12 +256,12 @@ const Passbook = () => {
                             }}
                             style={{
                                 width: '100%',
-                                padding: '0.5rem',
+                                padding: '0.55rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         >
                             <option value="ALL">All Methods</option>
@@ -270,12 +286,12 @@ const Passbook = () => {
                             }}
                             style={{
                                 width: '100%',
-                                padding: '0.5rem',
+                                padding: '0.55rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         />
                     </div>
@@ -306,7 +322,7 @@ const Passbook = () => {
                 </div>
 
                 {/* Sorting Options */}
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <ArrowUpDown size={16} color="var(--text-secondary)" />
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Sort by:</span>
@@ -317,12 +333,12 @@ const Passbook = () => {
                                 setCurrentPage(1);
                             }}
                             style={{
-                                padding: '0.5rem',
+                                padding: '0.5rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         >
                             <option value="date">Date</option>
@@ -336,12 +352,12 @@ const Passbook = () => {
                                 setCurrentPage(1);
                             }}
                             style={{
-                                padding: '0.5rem',
+                                padding: '0.5rem 0.6rem',
                                 background: 'var(--surface)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '0.5rem',
                                 color: 'var(--text)',
-                                fontSize: '0.875rem'
+                                fontSize: '0.85rem'
                             }}
                         >
                             <option value="desc">Descending</option>
@@ -352,64 +368,158 @@ const Passbook = () => {
 
                 {/* Transactions Table */}
                 <div style={{ overflowX: 'auto' }}>
-                    <table className="data-table">
+                    <table className="data-table data-table--passbook">
                         <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Payment Method</th>
-                                <th style={{ textAlign: 'right' }}>Amount</th>
-                                <th style={{ textAlign: 'center' }}>Type</th>
-                            </tr>
+                            {isMobileTable ? (
+                                <tr>
+                                    <th style={{ minWidth: '120px' }}>Date &amp; Time</th>
+                                    <th style={{ minWidth: '180px' }}>Details</th>
+                                    <th style={{ textAlign: 'right', minWidth: '100px' }}>Amount</th>
+                                </tr>
+                            ) : (
+                                <tr>
+                                    <th style={{ minWidth: '120px' }}>Date &amp; Time</th>
+                                    <th style={{ minWidth: '140px' }}>Description</th>
+                                    <th>Category</th>
+                                    <th>Payment Method</th>
+                                    <th style={{ textAlign: 'right' }}>Amount</th>
+                                    <th style={{ textAlign: 'center' }}>Type</th>
+                                </tr>
+                            )}
                         </thead>
                         <tbody>
                             {paginatedTransactions.map((transaction, idx) => (
-                                <tr key={transaction.id || idx} className="data-row">
-                                    <td>
-                                        <div>{formatDate(transaction.transactionDate)}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                                            {formatTime(transaction.transactionDate)}
-                                        </div>
-                                    </td>
-                                    <td style={{ maxWidth: '200px' }}>
-                                        <div style={{ fontWeight: '500' }}>{transaction.description || 'N/A'}</div>
-                                        {transaction.notes && (
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                                                {transaction.notes}
+                                isMobileTable ? (
+                                    <tr key={transaction.id || idx} className="data-row">
+                                        {/* 1. Date & Time */}
+                                        <td>
+                                            <div className="data-cell--nowrap">{formatDate(transaction.transactionDate)}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }} className="data-cell--nowrap">
+                                                {formatTime(transaction.transactionDate)}
                                             </div>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <span style={{
-                                            padding: '0.25rem 0.75rem',
-                                            background: 'rgba(99, 102, 241, 0.1)',
-                                            borderRadius: '0.5rem',
-                                            fontSize: '0.75rem',
-                                            fontWeight: '500'
-                                        }}>
-                                            {transaction.categoryId || 'Uncategorized'}
-                                        </span>
-                                    </td>
-                                    <td style={{ color: 'var(--text-secondary)' }}>
-                                        {transaction.paymentMethod || 'N/A'}
-                                    </td>
-                                    <td style={{
-                                        padding: '0.75rem',
-                                        textAlign: 'right',
-                                        fontWeight: '600',
-                                        color: transaction.type === 'INCOME' ? '#10b981' : '#ef4444'
-                                    }}>
-                                        {formatCurrency(transaction.amount)}
-                                    </td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                        {transaction.type === 'INCOME' ? (
-                                            <TrendingUp size={18} color="#10b981" />
-                                        ) : (
-                                            <TrendingDown size={18} color="#ef4444" />
-                                        )}
-                                    </td>
-                                </tr>
+                                        </td>
+
+                                        {/* 2. Description + Category + Payment (with inline labels) */}
+                                        <td
+                                            style={{
+                                                verticalAlign: 'top',
+                                                textAlign: 'left'
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                                Description:
+                                            </div>
+                                            <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                                                {transaction.description || 'N/A'}
+                                            </div>
+                                            {transaction.notes && (
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                                                    {transaction.notes}
+                                                </div>
+                                            )}
+                                            <div style={{ marginTop: '0.15rem', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                                Category:
+                                            </div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center', marginBottom: '0.1rem' }}>
+                                                <span style={{
+                                                    padding: '0.2rem 0.6rem',
+                                                    background: 'rgba(99, 102, 241, 0.1)',
+                                                    borderRadius: '0.5rem',
+                                                    fontSize: '0.7rem',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {transaction.categoryId || 'Uncategorized'}
+                                                </span>
+                                            </div>
+                                            {transaction.paymentMethod && (
+                                                <>
+                                                    <div style={{ marginTop: '0.15rem', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                                        Payment:
+                                                    </div>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: '500' }}>
+                                                        {transaction.paymentMethod}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </td>
+
+                                        {/* 3. Amount + Type Icon */}
+                                        <td style={{ textAlign: 'right' }}>
+                                            <div
+                                                className="data-cell--nowrap"
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'flex-end',
+                                                    gap: '0.3rem',
+                                                    fontWeight: '600',
+                                                    color: transaction.type === 'INCOME' ? '#10b981' : '#ef4444'
+                                                }}
+                                            >
+                                                {formatCurrency(transaction.amount)}
+                                                {transaction.type === 'INCOME' ? (
+                                                    <TrendingUp size={16} color="#10b981" />
+                                                ) : (
+                                                    <TrendingDown size={16} color="#ef4444" />
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    <tr key={transaction.id || idx} className="data-row">
+                                        <td>
+                                            <div className="data-cell--nowrap">{formatDate(transaction.transactionDate)}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }} className="data-cell--nowrap">
+                                                {formatTime(transaction.transactionDate)}
+                                            </div>
+                                        </td>
+                                        <td
+                                            style={{
+                                                maxWidth: '220px',
+                                                wordBreak: 'break-word'
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: '500' }}>{transaction.description || 'N/A'}</div>
+                                            {transaction.notes && (
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                                                    {transaction.notes}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="data-cell--nowrap">
+                                            <span style={{
+                                                padding: '0.25rem 0.75rem',
+                                                background: 'rgba(99, 102, 241, 0.1)',
+                                                borderRadius: '0.5rem',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '500'
+                                            }}>
+                                                {transaction.categoryId || 'Uncategorized'}
+                                            </span>
+                                        </td>
+                                        <td style={{ color: 'var(--text-secondary)' }} className="data-cell--nowrap">
+                                            {transaction.paymentMethod || 'N/A'}
+                                        </td>
+                                        <td
+                                            className="data-cell--nowrap"
+                                            style={{
+                                                padding: '0.75rem',
+                                                textAlign: 'right',
+                                                fontWeight: '600',
+                                                color: transaction.type === 'INCOME' ? '#10b981' : '#ef4444'
+                                            }}
+                                        >
+                                            {formatCurrency(transaction.amount)}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                            {transaction.type === 'INCOME' ? (
+                                                <TrendingUp size={18} color="#10b981" />
+                                            ) : (
+                                                <TrendingDown size={18} color="#ef4444" />
+                                            )}
+                                        </td>
+                                    </tr>
+                                )
                             ))}
                         </tbody>
                     </table>
@@ -422,8 +532,9 @@ const Passbook = () => {
                         justifyContent: 'center',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginTop: '1.5rem',
-                        padding: '1rem'
+                        marginTop: '1.25rem',
+                        padding: '0.75rem',
+                        flexWrap: 'wrap'
                     }}>
                         <button
                             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
