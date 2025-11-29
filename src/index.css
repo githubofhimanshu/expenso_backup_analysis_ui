@@ -100,7 +100,7 @@ h3 {
 }
 
 .grid-cols-2 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 .app-header {
@@ -193,6 +193,7 @@ h3 {
   border-bottom: 2px solid var(--border);
   padding: 0 1rem;
   overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .tab-button {
@@ -275,6 +276,7 @@ h3 {
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s, transform 0.15s ease, box-shadow 0.15s ease;
+  max-width: 100%;
 }
 
 .upload-zone:hover,
@@ -294,6 +296,7 @@ h3 {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
+  table-layout: fixed;
 }
 
 .data-table thead tr {
@@ -317,6 +320,16 @@ h3 {
 
 .data-row:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.data-cell--nowrap {
+  white-space: nowrap;
+}
+
+.data-cell--truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .loading-spinner {
@@ -361,6 +374,10 @@ h3 {
     height: 240px;
   }
 
+   .grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
   .app-title {
     font-size: 2.1rem;
   }
@@ -368,6 +385,7 @@ h3 {
   .header-actions {
     justify-content: center;
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
 }
 
@@ -385,7 +403,7 @@ h3 {
   }
 
   .card {
-    padding: 1rem;
+    padding: 0.9rem;
     border-radius: 0.9rem;
   }
 
@@ -394,7 +412,7 @@ h3 {
   }
 
   .upload-zone {
-    padding: 2.25rem 1.5rem;
+    padding: 2rem 1.25rem;
   }
 
   .tabs {
@@ -426,5 +444,16 @@ h3 {
   .data-table th,
   .data-table td {
     padding: 0.6rem;
+  }
+
+  /* Extra tightening for the more text-heavy Passbook table */
+  .data-table--passbook {
+    font-size: 0.78rem;
+  }
+
+  .data-table--passbook th,
+  .data-table--passbook td {
+    padding: 0.5rem 0.4rem;
+    overflow-wrap: anywhere;
   }
 }
