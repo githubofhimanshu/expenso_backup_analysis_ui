@@ -6,7 +6,9 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH || '/',
+  // Set base path for GitHub Pages deployment
+  // Change this to match your repository name if different
+  base: process.env.VITE_BASE_PATH || '/expenso_backup_analysis_ui/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
