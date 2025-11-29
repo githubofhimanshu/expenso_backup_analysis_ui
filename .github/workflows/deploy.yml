@@ -37,11 +37,29 @@ jobs:
           VITE_BASE_PATH: /expenso_backup_analysis_ui/
         run: npm run build
 
+      - name: Prepare publish folder (only dist contents)
+        run: |
+          rm -rf publish || true
+          mkdir -p publish
+          cp -r dist/* publish/
+          # create 404 fallback for SPA routing
+          cp publish/index.html publish/404.html
+          echo "Publish folder contents:"
+          ls -la publish || true
+          echo ""
+          echo "Verifying publish/index.html does NOT reference /src/main.jsx:"
+          if grep -q "/src/main.jsx" publish/index.html; then
+            echo "❌ ERROR: publish/index.html still references /src/main.jsx!"
+            exit 1
+          else
+            echo "✅ Verified: publish/index.html is correctly built (no /src/main.jsx reference)"
+          fi
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: dist/
+          path: publish/
           retention-days: 7
 
       - name: Build Summary
@@ -74,7 +92,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: dist
+          path: publish
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
@@ -84,7 +102,7 @@ jobs:
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: publish
 
       - name: Deploy to GitHub Pages
         id: deployment
